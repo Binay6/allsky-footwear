@@ -4,7 +4,9 @@
 //         await api('/orders', { method: 'POST', body: { ... } });
 export async function api(path, { method = 'GET', body } = {}) {
   const token = localStorage.getItem('token'); // saved at login time
-  const res = await fetch('/api' + path, {
+  const API_URL = import.meta.env.VITE_API_URL;
+
+const res = await fetch(`${API_URL}/api${path}`, {
     method,
     headers: {
       'Content-Type': 'application/json',
