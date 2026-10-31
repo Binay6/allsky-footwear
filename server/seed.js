@@ -34,9 +34,27 @@ const products = [
   { name: 'Tiny Toes Slippers', category: 'Kids', type: 'Slippers', price: 299, mrp: 449, sizes: KIDS, colors: ['Blue', 'Pink'], stock: 45, featured: false, description: 'Soft, squishy slippers that stay on little feet.' },
 ].map((p) => ({ ...p, image: img(p.name) }));
 
+async function removeLegacyUsernameIndex() {
+  const indexes = await User.collection.indexes();
+  const legacyIndex = indexes.find(
+    (index) =>
+      index.name === 'username_1' &&
+      index.unique === true &&
+      index.key?.username === 1 &&
+      Object.keys(index.key).length === 1
+  );
+
+  if (legacyIndex) {
+    await User.collection.dropIndex(legacyIndex.name);
+    console.log('Removed obsolete unique username index.');
+  }
+}
+
 async function seed() {
   await mongoose.connect(process.env.MONGO_URI);
-  console.log('Connected. Clearing old data...');
+  console.log(`Connected to database "${mongoose.connection.name}".`);
+  await removeLegacyUsernameIndex();
+  console.log('Clearing old data...');
   await Promise.all([User.deleteMany(), Product.deleteMany(), Coupon.deleteMany(), Order.deleteMany()]);
 
   // Two accounts you can log in with
